@@ -5358,6 +5358,27 @@ ICAL.TimezoneService = (function() {
     },
 
     /**
+     * Compares only the date part of this instance with another one.
+     *
+     * @param {ICAL.Duration} other         The instance to compare with
+     * @return {Number}                     -1, 0 or 1 for less/equal/greater
+     */
+    compareDateOnly: function icaltime_compareDateOnly(other, tz) {
+      function cmp(attr) {
+        return ICAL.Time._cmp_attr(a, b, attr);
+      }
+      var a = this;
+      var b = other;
+      var rc = 0;
+
+      if ((rc = cmp("year")) != 0) return rc;
+      if ((rc = cmp("month")) != 0) return rc;
+      if ((rc = cmp("day")) != 0) return rc;
+
+      return rc;
+    },
+
+    /**
      * Convert the instance into another timzone. The returned ICAL.Time
      * instance is always a copy.
      *
@@ -7081,7 +7102,7 @@ ICAL.RecurIterator = (function() {
       var before = (this.last ? this.last.clone() : null);
 
       if ((this.rule.count && this.occurrence_number >= this.rule.count) ||
-          (this.rule.until && this.last.compare(this.rule.until) > 0)) {
+          (this.rule.until && this.last.compareDateOnly(this.rule.until) > 0)) {
 
         //XXX: right now this is just a flag and has no impact
         //     we can simplify the above case to check for completed later.
@@ -7137,7 +7158,7 @@ ICAL.RecurIterator = (function() {
                         "you from death by recursion");
       }
 
-      if (this.rule.until && this.last.compare(this.rule.until) > 0) {
+      if (this.rule.until && this.last.compareDateOnly(this.rule.until) > 0) {
         this.completed = true;
         return null;
       } else {
